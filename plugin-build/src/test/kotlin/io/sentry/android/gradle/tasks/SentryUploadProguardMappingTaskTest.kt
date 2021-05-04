@@ -17,14 +17,15 @@ class SentryUploadProguardMappingTaskTest {
         val project = createProject()
         val randomUuid = UUID.randomUUID()
         val mappingFile = project.file("dummy/folder/mapping.txt")
+        val dir = project.layout.buildDirectory.dir("sentryAssets")
         val task: TaskProvider<SentryUploadProguardMappingsTask> =
             project.tasks.register(
                 "testUploadProguardMapping",
                 SentryUploadProguardMappingsTask::class.java
             ) {
                 it.cliExecutable.set("sentry-cli")
-                it.mappingsUuid.set(randomUuid)
-                it.mappingsFile.set(mappingFile)
+                it.outputDirectory.set(dir)
+                it.mappingsFile.setFrom(mappingFile)
                 it.autoUpload.set(true)
             }
 
@@ -32,7 +33,7 @@ class SentryUploadProguardMappingTaskTest {
 
         assertTrue("sentry-cli" in args)
         assertTrue("upload-proguard" in args)
-        assertTrue("--uuid" in args)
+        assertTrue("--write-properties" in args)
         assertTrue(randomUuid.toString() in args)
         assertTrue(mappingFile.toString() in args)
         assertFalse("--no-upload" in args)
@@ -49,8 +50,8 @@ class SentryUploadProguardMappingTaskTest {
                 SentryUploadProguardMappingsTask::class.java
             ) {
                 it.cliExecutable.set("sentry-cli")
-                it.mappingsUuid.set(randomUuid)
-                it.mappingsFile.set(mappingFile)
+                it.outputDirectory.set(project.layout.buildDirectory.dir("sentryAssets"))
+                it.mappingsFile.setFrom(mappingFile)
                 it.autoUpload.set(false)
             }
 
@@ -102,8 +103,8 @@ class SentryUploadProguardMappingTaskTest {
                 SentryUploadProguardMappingsTask::class.java
             ) {
                 it.cliExecutable.set("sentry-cli")
-                it.mappingsUuid.set(UUID.randomUUID())
-                it.mappingsFile.set(project.file("dummy/folder/mapping.txt"))
+                it.outputDirectory.set(project.layout.buildDirectory.dir("sentryAssets"))
+                it.mappingsFile.setFrom(project.file("dummy/folder/mapping.txt"))
                 it.autoUpload.set(false)
                 it.sentryOrganization.set("dummy-org")
             }
@@ -123,8 +124,8 @@ class SentryUploadProguardMappingTaskTest {
                 SentryUploadProguardMappingsTask::class.java
             ) {
                 it.cliExecutable.set("sentry-cli")
-                it.mappingsUuid.set(UUID.randomUUID())
-                it.mappingsFile.set(project.file("dummy/folder/mapping.txt"))
+                it.outputDirectory.set(project.layout.buildDirectory.dir("sentryAssets"))
+                it.mappingsFile.setFrom(project.file("dummy/folder/mapping.txt"))
                 it.autoUpload.set(false)
                 it.sentryProject.set("dummy-proj")
             }

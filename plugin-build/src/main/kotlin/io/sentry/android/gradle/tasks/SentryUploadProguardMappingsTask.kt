@@ -1,14 +1,17 @@
 package io.sentry.android.gradle.tasks
 
-import java.util.UUID
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
 
 abstract class SentryUploadProguardMappingsTask : Exec() {
 
@@ -19,11 +22,8 @@ abstract class SentryUploadProguardMappingsTask : Exec() {
     @get:Input
     abstract val cliExecutable: Property<String>
 
-    @get:Input
-    abstract val mappingsUuid: Property<UUID>
-
-    @get:InputFile
-    abstract val mappingsFile: RegularFileProperty
+    @get:InputFiles
+    abstract val mappingsFile: ConfigurableFileCollection
 
     @get:InputFile
     @get:Optional
@@ -39,6 +39,9 @@ abstract class SentryUploadProguardMappingsTask : Exec() {
 
     @get:Input
     abstract val autoUpload: Property<Boolean>
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
 
     override fun exec() {
         computeCommandLineArgs().let {
@@ -62,9 +65,9 @@ abstract class SentryUploadProguardMappingsTask : Exec() {
         val args = mutableListOf(
             cliExecutable.get(),
             "upload-proguard",
-            "--uuid",
-            mappingsUuid.get().toString(),
-            mappingsFile.get().toString()
+            "--write-properties",
+            outputDirectory.file("sentry-debug-meta.properties").get().asFile.absolutePath,
+            mappingsFile.first().absolutePath
         )
 
         if (!autoUpload.get()) {
