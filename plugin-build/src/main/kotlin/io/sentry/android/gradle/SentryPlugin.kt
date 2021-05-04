@@ -49,7 +49,7 @@ class SentryPlugin : Plugin<Project> {
                     SentryUploadProguardMappingsTask::class.java
                 ) {
                     it.workingDir(project.rootDir)
-                    it.cliExecutable.set(cliExecutable)
+                    it.cliExecutable.set(File(cliExecutable))
                     it.sentryProperties.set(sentryProperties?.let { file -> project.file(file) })
                     it.outputDirectory.set(assetsDirectory)
                     it.mappingsFile.setFrom(variant.mappingFileProvider)

@@ -6,26 +6,34 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity.RELATIVE
 
+@CacheableTask
 abstract class SentryUploadProguardMappingsTask : Exec() {
 
     init {
         description = "Uploads the proguard mappings file to Sentry"
     }
 
-    @get:Input
-    abstract val cliExecutable: Property<String>
+    @get:InputFile
+    @get:Classpath
+    abstract val cliExecutable: RegularFileProperty
 
     @get:InputFiles
+    @get:PathSensitive(RELATIVE)
     abstract val mappingsFile: ConfigurableFileCollection
 
     @get:InputFile
+    @get:PathSensitive(RELATIVE)
     @get:Optional
     abstract val sentryProperties: RegularFileProperty
 
@@ -63,7 +71,7 @@ abstract class SentryUploadProguardMappingsTask : Exec() {
 
     internal fun computeCommandLineArgs(): List<String> {
         val args = mutableListOf(
-            cliExecutable.get(),
+            cliExecutable.get().asFile.absolutePath,
             "upload-proguard",
             "--write-properties",
             outputDirectory.file("sentry-debug-meta.properties").get().asFile.absolutePath,
